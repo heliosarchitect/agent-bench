@@ -210,6 +210,15 @@ class HTTPAgent(AgentClient):
                 pass
             else:
                 resp = resp.json()
+
+                # Extract content from OpenAI-compatible API response (vLLM)
+                if isinstance(resp, dict) and "choices" in resp and len(resp["choices"]) > 0:
+                    message = resp["choices"][0].get("message", {})
+                    content = message.get("content", "")
+                    if content:
+                        return content
+
+                # Fallback to return_format if not OpenAI format
                 return self.return_format.format(response=resp)
             time.sleep(_ + 2)
         raise Exception("Failed.")
